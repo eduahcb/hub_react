@@ -32,7 +32,6 @@ services:
       - "8080:8080"
     environment:
       - PORT=8080
-      - REDIS_ADDR=localhost:6379
       - SECRET_KEY=ZHdqYWR3YWR3YWRhd2tkamFrbGpkbHdha2pka3dhZGFqZGxhd2tqZHdrbGFqZGts
       - DB_URL=postgres://postgres:123@hub_api_postgres/hub_dev
       - REDIS_ADDR=hub_api_redis:6379
