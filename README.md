@@ -33,7 +33,7 @@ pnpm install
 Copie o arquivo .env.example para o arquivo .env.local. Lembre de setar a url da api para a mesma porta que a aplicação, no caso `http:localhost:3000`
 
 ```bash
-touch cp .env.example .env.local
+cp .env.example .env.local
 ```
 
 ### Iniciar projeto
