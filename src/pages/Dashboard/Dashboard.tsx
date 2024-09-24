@@ -45,7 +45,7 @@ export const Dashboard = ({ navigate }: DashboardProps) => {
 			<header className="w-full pt-12 px-6 mb-14 xl:px-0">
 				<div className="w-full max-w-7xl m-auto flex justify-between">
 					<h1 className="text-2xl font-bold text-primary-main">Hub</h1>
-					<Button size="sm" onClick={onSignout}>
+					<Button disabled={signout.isPending} loading={signout.isPending} size="sm" onClick={onSignout}>
 						Sair
 					</Button>
 				</div>
