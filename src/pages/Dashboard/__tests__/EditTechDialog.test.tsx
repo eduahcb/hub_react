@@ -1,55 +1,14 @@
 import { render, screen, waitFor } from '@testing-library/react'
 
-import { HttpResponse, http } from 'msw'
 import { setupServer } from 'msw/node'
 
-import { wrapper } from 'lib/utils/test-utils'
+import { createServerEndpoints, wrapper } from 'lib/utils/test-utils'
 
 import { Dashboard } from '../Dashboard'
 
 import userEvent from '@testing-library/user-event'
 
 const navigate = vi.fn()
-
-const mockProfile = () => {
-	return http.get('/api/v1/me', () => {
-		return HttpResponse.json({
-			id: 1,
-			name: 'Crispim',
-			module: {
-				id: 1,
-				name: 'Módulo 1',
-			},
-		})
-	})
-}
-
-// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-const mockTechsQueries = (response: any) => {
-	return http.get('/api/v1/techs', () => {
-		return HttpResponse.json(response)
-	})
-}
-
-// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-const mockLevelsQueries = (response: any) => {
-	return http.get('/api/v1/levels', () => {
-		return HttpResponse.json(response)
-	})
-}
-
-// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-const mockUpateTechMutation = (response: any) => {
-	return http.put('/api/v1/techs/:id', async () => {
-		return HttpResponse.json(response, { status: 200 })
-	})
-}
-// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-const mockDeleteTechMutation = (response: any) => {
-	return http.delete('/api/v1/techs/:id', async () => {
-		return HttpResponse.json(response, { status: 200 })
-	})
-}
 
 const server = setupServer()
 
@@ -73,23 +32,32 @@ describe('when is editing a tech', () => {
 		server.resetHandlers()
 	})
 
-	afterEach(() => server.resetHandlers())
-
 	afterAll(() => server.close())
 
-	describe('validation', () => {
-		test('should show error message when tech is empty', async () => {
-			const endpoints = [
-				mockProfile(),
-				mockLevelsQueries({ levels: [{ id: 1, name: 'Iniciante' }] }),
-				mockTechsQueries({
-					techs: [
-						{ id: 1, name: 'remix', level: { id: 1, name: 'Iniciante' } },
-					],
-				}),
-			]
-			server.use(...endpoints)
+	describe('when user does not fill in the fields', () => {
+		beforeEach(() => {
+			createServerEndpoints(server, [
+				{ path: '/api/v1/me', method: 'get', response: {}, status: 200 },
+				{
+					path: '/api/v1/techs',
+					method: 'get',
+					response: {
+						techs: [
+							{ id: 1, name: 'remix', level: { id: 1, name: 'Iniciante' } },
+						],
+					},
+					status: 200,
+				},
+				{
+					path: '/api/v1/levels',
+					method: 'get',
+					response: { levels: [{ id: 1, name: 'Iniciante' }] },
+					status: 200,
+				},
+			])
+		})
 
+		test('should show error message', async () => {
 			await openEditModal('remix')
 
 			const nameInput = await screen.findByDisplayValue('remix')
@@ -106,58 +74,99 @@ describe('when is editing a tech', () => {
 		})
 	})
 
-	describe('success', () => {
-		test('should create a new tech', async () => {
-			const endpoints = [
-				mockProfile(),
-				mockLevelsQueries({ levels: [{ id: 1, name: 'Iniciante' }] }),
-				mockTechsQueries({
-					techs: [
-						{ id: 1, name: 'solidjs', level: { id: 1, name: 'Iniciante' } },
-					],
-				}),
-				mockUpateTechMutation({
-					tech: { id: 1, name: 'svelte', level: { id: 1, name: 'Iniciante' } },
-				}),
-			]
-			server.use(...endpoints)
+	describe('when user changes the tech name', () => {
+		beforeEach(() => {
+			createServerEndpoints(server, [
+				{ path: '/api/v1/me', method: 'get', response: {}, status: 200 },
+				{
+					path: '/api/v1/techs',
+					method: 'get',
+					response: {
+						techs: [
+							{ id: 1, name: 'solidjs', level: { id: 1, name: 'Iniciante' } },
+						],
+					},
+					status: 200,
+				},
+				{
+					path: '/api/v1/levels',
+					method: 'get',
+					response: { levels: [{ id: 1, name: 'Iniciante' }] },
+					status: 200,
+				},
+				{
+					path: '/api/v1/techs/1',
+					method: 'put',
+					response: {
+						tech: {
+							id: 1,
+							name: 'svelte',
+							level: { id: 1, name: 'Iniciante' },
+						},
+					},
+					status: 200,
+				},
+			])
+		})
 
+		test('should create a new tech', async () => {
 			await openEditModal('solidjs')
 
 			const nameInput = await screen.findByDisplayValue('solidjs')
 			await userEvent.clear(nameInput)
-			await userEvent.type(nameInput, 'svelte')
 
+			await userEvent.type(nameInput, 'svelte')
 			const button = await screen.findByRole('button', {
 				name: 'Salvar alterações',
 			})
 			await userEvent.click(button)
-
 			expect(await screen.findByText('svelte')).toBeInTheDocument()
+		})
+	})
+
+	describe('when user deles the tech', () => {
+		beforeEach(() => {
+			createServerEndpoints(server, [
+				{ path: '/api/v1/me', method: 'get', response: {}, status: 200 },
+				{
+					path: '/api/v1/techs',
+					method: 'get',
+					response: {
+						techs: [
+							{ id: 1, name: 'solidjs', level: { id: 1, name: 'Iniciante' } },
+						],
+					},
+					status: 200,
+				},
+				{
+					path: '/api/v1/levels',
+					method: 'get',
+					response: { levels: [{ id: 1, name: 'Iniciante' }] },
+					status: 200,
+				},
+				{
+					path: '/api/v1/techs/1',
+					method: 'delete',
+					response: {
+						tech: {
+							id: 1,
+							name: 'solidjs',
+							level: { id: 1, name: 'Iniciante' },
+						},
+					},
+					status: 200,
+				},
+			])
 		})
 
 		test('should delete a new tech', async () => {
-			const endpoints = [
-				mockProfile(),
-				mockLevelsQueries({ levels: [{ id: 1, name: 'Iniciante' }] }),
-				mockTechsQueries({
-					techs: [
-						{ id: 1, name: 'solidjs', level: { id: 1, name: 'Iniciante' } },
-					],
-				}),
-				mockDeleteTechMutation({
-					tech: { id: 1, name: 'solidjs', level: { id: 1, name: 'Iniciante' } },
-				}),
-			]
-			server.use(...endpoints)
-
 			await openEditModal('solidjs')
 
 			const button = await screen.findByRole('button', {
 				name: 'Excluir',
 			})
-			await userEvent.click(button)
 
+			await userEvent.click(button)
 			await waitFor(() =>
 				expect(screen.queryByText('solidjs')).not.toBeInTheDocument(),
 			)

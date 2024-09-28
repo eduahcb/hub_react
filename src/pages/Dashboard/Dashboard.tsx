@@ -55,7 +55,7 @@ export const Dashboard = ({ navigate }: DashboardProps) => {
 					<p className="text-lg font-bold text-grey-1">
 						Olá {user?.name ?? 'Estranho'}
 					</p>
-					<p className="text-lg font-bold text-grey-1">{user?.module.name}</p>
+					<p className="text-lg font-bold text-grey-1">{user?.module?.name}</p>
 				</section>
 				<section className="flex justify-between mb-7">
 					<p className="text-lg font-bold text-grey-1">Tecnologias</p>
