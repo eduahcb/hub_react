@@ -30,10 +30,9 @@ describe('Signin page', () => {
 	beforeAll(() => server.listen())
 
 	beforeEach(() => {
+		server.resetHandlers()
 		navigate.mockClear()
 	})
-
-	afterEach(() => server.resetHandlers())
 
 	afterAll(() => server.close())
 
