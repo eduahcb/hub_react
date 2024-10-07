@@ -51,7 +51,7 @@ A aplicação irá iniciar na porta `3000`
 Copie o arquivo .env.example para o arquivo .env.staging.local. Lembre de setar a url da api para uma outra diferente da aplicaçao
 
 ```bash
-touch cp .env.example .env.staging.local
+  cp .env.example .env.staging.local
 ```
 
 ### Faça build da aplicação
