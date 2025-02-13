@@ -6,10 +6,8 @@ import {
 	fetchSignout,
 	fetchUpdateTech,
 } from 'lib/api'
-import { InternalServerError } from 'lib/errors'
-import { useAuth } from 'lib/hooks/useAuth'
 
-import { toast } from 'sonner'
+import { useAuth } from 'lib/hooks/useAuth'
 
 import type { Tech, TechForm } from 'lib/types'
 
@@ -26,14 +24,6 @@ export const useDashboardMutation = () => {
 			queryClient.setQueryData(['techs'], (prevData: Tech[]) => {
 				return [...prevData, data]
 			})
-		},
-		onError: (error) => {
-			if (error instanceof InternalServerError) {
-				toast.error('Ops! Algo deu errado', {
-					position: 'top-right',
-					duration: 2000,
-				})
-			}
 		},
 	})
 
@@ -54,14 +44,6 @@ export const useDashboardMutation = () => {
 				return newTechs
 			})
 		},
-		onError: (error) => {
-			if (error instanceof InternalServerError) {
-				toast.error('Ops! Algo deu errado', {
-					position: 'top-right',
-					duration: 2000,
-				})
-			}
-		},
 	})
 
 	const deleteTech = useMutation({
@@ -73,14 +55,6 @@ export const useDashboardMutation = () => {
 				return newTechs
 			})
 		},
-		onError: (error) => {
-			if (error instanceof InternalServerError) {
-				toast.error('Ops! Algo deu errado', {
-					position: 'top-right',
-					duration: 2000,
-				})
-			}
-		},
 	})
 
 	const signout = useMutation({
@@ -88,14 +62,6 @@ export const useDashboardMutation = () => {
 		mutationFn: (_: string) => fetchSignout({ token }),
 		onSuccess: () => {
 			destroySession()
-		},
-		onError: (error) => {
-			if (error instanceof InternalServerError) {
-				toast.error('Ops! Algo deu errado', {
-					position: 'top-right',
-					duration: 2000,
-				})
-			}
 		},
 	})
 
