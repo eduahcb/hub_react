@@ -15,6 +15,10 @@ import { useDashboardQueries } from './hooks/useDashboardQueries'
 import { useDashboardMutation } from './hooks/useDashboardMutations'
 import type { NavigateFunction } from 'react-router-dom'
 
+import { toast } from 'sonner'
+
+import { InternalServerError } from 'lib/errors'
+
 type DashboardProps = {
 	navigate: NavigateFunction
 }
@@ -37,6 +41,14 @@ export const Dashboard = ({ navigate }: DashboardProps) => {
 	const onSignout = () => {
 		signout.mutate('', {
 			onSuccess: () => navigate('/'),
+			onError: (error) => {
+				if (error instanceof InternalServerError) {
+					toast.error('Ops! Algo deu errado', {
+						position: 'top-right',
+						duration: 2000,
+					})
+				}
+			},
 		})
 	}
 
@@ -45,7 +57,12 @@ export const Dashboard = ({ navigate }: DashboardProps) => {
 			<header className="w-full pt-12 px-6 mb-14 xl:px-0">
 				<div className="w-full max-w-7xl m-auto flex justify-between">
 					<h1 className="text-2xl font-bold text-primary-main">Hub</h1>
-					<Button disabled={signout.isPending} loading={signout.isPending} size="sm" onClick={onSignout}>
+					<Button
+						disabled={signout.isPending}
+						loading={signout.isPending}
+						size="sm"
+						onClick={onSignout}
+					>
 						Sair
 					</Button>
 				</div>
@@ -85,7 +102,16 @@ export const Dashboard = ({ navigate }: DashboardProps) => {
 												variant="tertiary"
 												onClick={(e) => {
 													e.stopPropagation()
-													deleteTech.mutate(tech.id)
+													deleteTech.mutate(tech.id, {
+														onError: (error) => {
+															if (error instanceof InternalServerError) {
+																toast.error('Ops! Algo deu errado', {
+																	position: 'top-right',
+																	duration: 2000,
+																})
+															}
+														},
+													})
 												}}
 											>
 												<TrashSVG className="w-5 h-5" />

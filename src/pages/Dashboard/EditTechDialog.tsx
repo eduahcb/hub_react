@@ -18,6 +18,9 @@ import { Button } from 'components/Button'
 import { techForm } from 'lib/validation/techForm'
 import { useDashboardMutation } from './hooks/useDashboardMutations'
 
+import { toast } from 'sonner'
+import { InternalServerError } from 'lib/errors'
+
 type EditTechDialogProps = {
 	tech: Tech | undefined
 	levels: Level[] | undefined
@@ -50,6 +53,14 @@ export const EditTechDialog = ({
 					onSuccess: () => {
 						onOpenChange?.(false)
 					},
+					onError: (error) => {
+						if (error instanceof InternalServerError) {
+							toast.error('Ops! Algo deu errado', {
+								position: 'top-right',
+								duration: 2000,
+							})
+						}
+					},
 				},
 			)
 		}
@@ -60,6 +71,14 @@ export const EditTechDialog = ({
 			deleteTech.mutate(tech?.id, {
 				onSuccess: () => {
 					onOpenChange?.(false)
+				},
+				onError: (error) => {
+					if (error instanceof InternalServerError) {
+						toast.error('Ops! Algo deu errado', {
+							position: 'top-right',
+							duration: 2000,
+						})
+					}
 				},
 			})
 		}

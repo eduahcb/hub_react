@@ -9,6 +9,10 @@ import {
 	DialogTitle,
 } from 'components/Dialog'
 
+import { toast } from 'sonner'
+
+import { InternalServerError } from 'lib/errors'
+
 import { Feedback, Form } from 'components/Form'
 import { Input } from 'components/Input'
 import { Select } from 'components/Select'
@@ -45,6 +49,14 @@ export const CreateTechDialog = ({
 			onSuccess: () => {
 				onOpenChange?.(false)
 				reset()
+			},
+			onError: (error) => {
+				if (error instanceof InternalServerError) {
+					toast.error('Ops! Algo deu errado', {
+						position: 'top-right',
+						duration: 2000,
+					})
+				}
 			},
 		})
 	}
