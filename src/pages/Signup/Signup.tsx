@@ -16,6 +16,10 @@ import { useAuth } from 'lib/hooks/useAuth'
 import { useSignupMutations } from './hooks/useSignupMutations'
 import { useSignupQueries } from './hooks/useSingupQueries'
 
+import { BadRequest, InternalServerError } from 'lib/errors'
+
+import { toast } from 'sonner'
+
 type SignupProps = {
 	navigate: NavigateFunction
 }
@@ -35,13 +39,36 @@ export const Signup = ({ navigate }: SignupProps) => {
 
 	const { modules } = useSignupQueries()
 
-	const { signup } = useSignupMutations({
-		setError,
-		navigate,
-		createSession,
-	})
+	const { signup } = useSignupMutations()
 
-	const onSubmit = (signupForm: SignupForm) => signup.mutate(signupForm)
+	const onSubmit = (signupForm: SignupForm) => {
+		signup.mutate(signupForm, {
+			onSuccess: (token) => {
+				toast.success('Conta criada com sucesso', {
+					position: 'top-right',
+					duration: 2000,
+				})
+
+				createSession(token)
+				navigate('/dashboard')
+			},
+			onError: (error) => {
+				if (error instanceof BadRequest) {
+					setError('email', {
+						type: 'manual',
+						message: 'email já cadastrado',
+					})
+				}
+
+				if (error instanceof InternalServerError) {
+					toast.error('Ops! Algo deu errado', {
+						position: 'top-right',
+						duration: 2000,
+					})
+				}
+			},
+		})
+	}
 
 	return (
 		<div className="h-screen flex">
