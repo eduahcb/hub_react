@@ -13,6 +13,10 @@ import { Feedback, Form } from 'components/Form'
 import { signinForm } from 'lib/validation/signinForm'
 import { useAuth } from 'lib/hooks/useAuth'
 
+import { InternalServerError, NotFound, Unauthorized } from 'lib/errors'
+
+import { toast } from 'sonner'
+
 type LoginProps = {
 	navigate: NavigateFunction
 }
@@ -29,13 +33,39 @@ export const Signin = ({ navigate }: LoginProps) => {
 
 	const { createSession } = useAuth()
 
-	const { signin } = useSigninMutations({
-		navigate,
-		setError,
-		createSession,
-	})
+	const { signin } = useSigninMutations()
 
-	const onSubmit = async (data: SigninForm) => signin.mutate(data)
+	const onSubmit = async (data: SigninForm) => {
+    signin.mutate(data, {
+      onSuccess: (token: string): void => {
+        createSession(token)
+        navigate('/dashboard')
+      },
+      onError: (error: Error) => {
+			if (error instanceof NotFound) {
+				setError('email', {
+					type: 'manual',
+					message: 'email não encontrado',
+				})
+			}
+
+			if (error instanceof Unauthorized) {
+				setError('password', {
+					type: 'manual',
+					message: 'senha incorreta',
+				})
+			}
+
+			if (error instanceof InternalServerError) {
+				toast.error('Ops! Algo deu errado', {
+					position: 'top-right',
+					duration: 2000,
+				})
+			}
+		},
+
+    })
+  }
 
 	return (
 		<div className="h-screen flex">
